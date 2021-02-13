@@ -1,6 +1,9 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-import { store, key } from "./store";
+import { userStoreSymbol, createUserStore } from "./store/user";
 
-createApp(App).use(router).use(store, key).mount("#app");
+createApp(App)
+  .use(router)
+  .provide(userStoreSymbol, createUserStore())
+  .mount("#app");

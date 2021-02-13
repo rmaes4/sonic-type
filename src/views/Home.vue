@@ -9,18 +9,18 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from "vue";
 import { usersCollection } from "../firebase";
-import { useStore } from "../store";
+import { useUserStore } from "../store/user";
 
 export default defineComponent({
   setup() {
-    const store = useStore();
-    const count = computed(() => store.getters.getCount);
-    const increment = () => store.dispatch("incrementCount");
-    const decrement = () => store.dispatch("decrementCount");
+    console.log(useUserStore());
+    const count = computed(() => {
+      return useUserStore()?.state.counter;
+    });
     return {
       count,
-      increment,
-      decrement,
+      increment: useUserStore()?.increment,
+      decrement: useUserStore()?.decrement,
     };
   },
 });
