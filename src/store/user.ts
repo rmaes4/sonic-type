@@ -1,27 +1,55 @@
 import { reactive, readonly, provide, inject } from "vue";
+import { auth } from "../firebase";
 
 export const userStoreSymbol = Symbol("user");
 
-interface UserStore {
-  readonly state: {
-    counter: number;
+interface UserData {
+  displayName: string;
+  email: string;
+}
+
+interface UserState {
+  user: {
+    loggedIn: boolean;
+    data: UserData | null;
   };
-  increment: any;
-  decrement: any;
+}
+
+interface UserStore {
+  readonly state: UserState;
+  fetchUser: any;
+  signOut: any;
 }
 
 export const createUserStore = () => {
-  const state = reactive({
-    counter: 0,
+  auth.onAuthStateChanged((user) => {
+    fetchUser(user as UserData | null);
   });
-  const increment = () => {
-    state.counter++;
+  const state = reactive<UserState>({
+    user: {
+      loggedIn: false,
+      data: null,
+    },
+  });
+  const fetchUser = (user: UserData | null) => {
+    state.user.loggedIn = user !== null;
+    if (user) {
+      state.user.data = {
+        displayName: user.displayName,
+        email: user.email,
+      };
+    } else {
+      state.user.data = null;
+    }
   };
-  const decrement = () => state.counter--;
+  const signOut = async () => {
+    console.log("sign out 2");
+    await auth.signOut();
+  };
   return {
     state: readonly(state),
-    increment,
-    decrement,
+    fetchUser,
+    signOut,
   };
 };
 

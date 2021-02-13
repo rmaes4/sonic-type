@@ -1,17 +1,15 @@
 <template>
-  <Nav />
-  <router-view />
+  <div>profile</div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Nav from "./components/Nav.vue";
+
 export default defineComponent({
-  name: "App",
-  components: {
-    Nav,
+  setup() {
+    return {};
   },
 });
 </script>
 
-<style></style>
+<style scoped></style>

@@ -1,9 +1,9 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import router from "./router";
 import { userStoreSymbol, createUserStore } from "./store/user";
+import router from "./router";
 
 createApp(App)
-  .use(router)
   .provide(userStoreSymbol, createUserStore())
+  .use(router)
   .mount("#app");
