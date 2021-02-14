@@ -23,6 +23,7 @@ export default defineComponent({
     const loggedIn = computed(() => {
       return useUserStore()?.state.user.loggedIn;
     });
+
     const user = computed(() => {
       return useUserStore()?.state.user.data;
     });
@@ -34,9 +35,8 @@ export default defineComponent({
 
 <style scoped>
 #nav {
-  width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  border: 1px solid black;
+  padding: 10px;
 }
 
 .clearfix::after {
