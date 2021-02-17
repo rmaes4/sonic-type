@@ -1,18 +1,22 @@
 <template>
-  <div>high scores</div>
-
-  <h1>Average Score</h1>
-  <ol>
-    <li v-for="avgScore of avgScores" :key="avgScore.name">
-      {{ avgScore.name }} - {{ avgScore.avgScore }}
-    </li>
-  </ol>
-  <h1>Highest Score</h1>
-  <ol>
-    <li v-for="hScore of highestScores" :key="hScore.name">
-      {{ hScore.name }} - {{ hScore.highestScore }}
-    </li>
-  </ol>
+  <div id="hsWrap" class="clearfix">
+    <div class="left">
+      <h1>Average Score</h1>
+      <ol>
+        <li v-for="avgScore of avgScores" :key="avgScore.name">
+          {{ avgScore.name }} - {{ avgScore.avgScore }} wpm
+        </li>
+      </ol>
+    </div>
+    <div class="right">
+      <h1>Highest Score</h1>
+      <ol>
+        <li v-for="hScore of highestScores" :key="hScore.name">
+          {{ hScore.name }} - {{ hScore.highestScore }} wpm
+        </li>
+      </ol>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -46,4 +50,31 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style lang="scss">
+@import "../scss/shared.scss";
+#hsWrap {
+  background-color: $surface;
+  padding: 100px;
+}
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+ol {
+  list-style: decimal;
+}
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+</style>

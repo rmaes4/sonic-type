@@ -19,11 +19,16 @@ export default defineComponent({
 });
 </script>
 
-<style>
-html,
-body {
-  margin: 0;
-  padding: 0;
+<style lang="scss">
+@import "scss/reset.scss";
+@import "scss/shared.scss";
+
+html {
+  background-color: $background;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $on-background;
 }
 
 #main {
@@ -43,7 +48,6 @@ body {
   bottom: 0;
   width: 100%;
   height: 2.5rem;
-  background-color: bisque;
   text-align: center;
 }
 </style>

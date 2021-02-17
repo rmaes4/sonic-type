@@ -1,15 +1,29 @@
 <template>
-  <div>profile</div>
+  <div id="profileWrapper">
+    <div>My average score: {{ user.avgScore }} wpm</div>
+    <br />
+    <div>My highest score: {{ user.highestScore }} wpm</div>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
+import { useUserStore } from "../store/user";
 
 export default defineComponent({
   setup() {
-    return {};
+    const user = computed(() => {
+      return useUserStore()?.state.user.data;
+    });
+    return { user };
   },
 });
 </script>
 
-<style scoped></style>
+<style lang="scss">
+@import "../scss/shared.scss";
+#profileWrapper {
+  background-color: $surface;
+  padding: 100px;
+}
+</style>

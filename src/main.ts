@@ -7,3 +7,5 @@ createApp(App)
   .provide(userStoreSymbol, createUserStore())
   .use(router)
   .mount("#app");
+
+//TODO: refactor everything

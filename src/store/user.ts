@@ -40,10 +40,13 @@ export const createUserStore = () => {
         displayName: user.displayName,
         email: user.email,
         avgScore: data.data()?.avgScore || 0,
+        highestScore: data.data()?.highestScore || 0,
       };
       usersCollection.doc(user.uid).onSnapshot((doc) => {
         const avgScore = doc.data()?.avgScore;
+        const highestScore = doc.data()?.highestScore;
         state.user.data.avgScore = avgScore;
+        state.user.data.highestScore = highestScore;
       });
     } else {
       state.user.data = null;

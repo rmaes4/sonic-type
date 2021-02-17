@@ -1,5 +1,10 @@
 <template>
-  <div>404</div>
+  <div id="errorWrapper">
+    <h1>404</h1>
+    <h2>Oops!</h2>
+    <br />
+    <p>The page you are looking for doesn't seem to exist.</p>
+  </div>
 </template>
 
 <script lang="ts">
@@ -12,4 +17,10 @@ export default defineComponent({
 });
 </script>
 
-<style></style>
+<style lang="scss">
+@import "../scss/shared.scss";
+#errorWrapper {
+  background-color: $surface;
+  padding: 100px;
+}
+</style>

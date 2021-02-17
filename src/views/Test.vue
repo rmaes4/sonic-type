@@ -1,5 +1,4 @@
 <template>
-  <div>test</div>
   <TypingTest
     :text="text"
     :author="author"
@@ -71,7 +70,8 @@ export default defineComponent({
         .trim()
         .replace(/[^\x20-\x7E]/gim, "")
         .replace(/\s\s.*$/gm, "")
-        .replace(author.value, "");
+        .replace(author.value, "")
+        .trim();
 
       //loading.value = false;
     };

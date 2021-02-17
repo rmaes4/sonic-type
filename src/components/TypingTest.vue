@@ -1,11 +1,19 @@
 <template>
-  <div
-    v-html="preview"
-    id="test-wrapper"
-    :class="focused ? 'focused' : 'unfocused'"
-  ></div>
-  <h1>{{ wordsPerMinute }} WPM</h1>
-  <pre>{{ targetText }}</pre>
+  <div class="clearfix topInfo">
+    <div class="left" id="author">&mdash; {{ author }}</div>
+    <div class="right" id="wpm">
+      <span id="score" :style="{ color: color }">{{ wordsPerMinute }}</span>
+      <span id="unit">wpm</span>
+    </div>
+  </div>
+  <div id="testWrap">
+    <div
+      v-html="preview"
+      id="test-wrapper"
+      :class="focused ? 'focused' : 'unfocused'"
+    ></div>
+    <div id="continue" v-if="completed">Press [ENTER] to begin a new test</div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -75,7 +83,7 @@ export default defineComponent({
         focused.value = false;
       });
       window.addEventListener("keypress", async function (ev) {
-        if (ev.key === " ") {
+        if (ev.key === " " && !completed.value) {
           ev.preventDefault();
           if (currentLetter.value > 0) {
             const length = targetText.value[currentWord.value].length;
@@ -94,7 +102,8 @@ export default defineComponent({
           emit("testComplete");
         } else if (
           ev.key === "Backspace" &&
-          (currentWord.value > 0 || currentLetter.value > 0)
+          (currentWord.value > 0 || currentLetter.value > 0) &&
+          !completed.value
         ) {
           if (currentLetter.value > 0) {
             userText.value[currentWord.value].pop();
@@ -104,17 +113,23 @@ export default defineComponent({
             currentWord.value--;
             currentLetter.value = userText.value[currentWord.value].length;
           }
-        } else if (ev.key !== "Backspace" && ev.key !== "Enter") {
+        } else if (
+          ev.key !== "Backspace" &&
+          ev.key !== "Enter" &&
+          !completed.value
+        ) {
           currentLetter.value++;
           userText.value[currentWord.value].push(ev.key);
         }
         if (
           (currentWord.value === targetText.value.length - 1 &&
             currentLetter.value >=
-              targetText.value[targetText.value.length - 1].length - 1) ||
+              targetText.value[targetText.value.length - 1].length) ||
           currentWord.value > targetText.value.length - 1
         ) {
           if (completed.value === false) {
+            console.log(currentWord.value);
+            console.log(currentLetter.value);
             console.log("STOP");
             timer.value.end();
             completed.value = true;
@@ -140,6 +155,15 @@ export default defineComponent({
       }
     };
     setup();
+    const color = computed(() => {
+      if (completed.value) {
+        return "#bb86fc";
+      } else if (started.value) {
+        return "#d7b7fd";
+      } else {
+        return "#f2e7fe";
+      }
+    });
 
     const errors = computed(() => {
       let errorCount = 0;
@@ -249,51 +273,105 @@ export default defineComponent({
       wordsPerMinute,
       focused,
       reset,
+      color,
+      completed,
     };
   },
 });
 </script>
 
-<style>
-#test-wrapper {
-  width: 800px;
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
-}
-.focused {
-  border: 5px solid black;
+<style lang="scss">
+@import "../scss/shared.scss";
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
 }
 
-.unfocused {
-  border: 1px solid black;
+.left {
+  float: left;
 }
+#continue {
+  text-align: center;
+  margin-top: 20px;
+}
+.right {
+  float: right;
+}
+#testWrap {
+  background-color: $surface;
+  padding: 40px;
+}
+#author {
+  padding: 20px;
+  color: #ffffff;
+  padding-top: 35px;
+}
+#test-wrapper {
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  padding: 12px;
+  font-size: 16px;
+  line-height: 2;
+  font-family: monospace;
+  background-color: $surface;
+  color: #bb86fc;
+  border: 1px solid #575757;
+  border-radius: 5px;
+}
+.topInfo {
+  margin-top: 100px;
+  margin-bottom: 20px;
+}
+#wpm {
+  padding: 20px;
+}
+#score {
+  margin-right: 6px;
+  font-size: 28px;
+  font-weight: 500;
+}
+#unit {
+  text-transform: lowercase;
+  font-weight: lighter;
+  font-size: 24px;
+}
+.focused {
+  background-color: #251f2c !important;
+  border-color: #bb86fc !important;
+}
+
+// .unfocused {
+//   border: 1px solid black;
+// }
 word {
-  margin-right: 5px;
+  margin-right: 10px;
   display: inline-block;
 }
 letter {
   display: inline;
+  margin-right: 2px;
 }
 
 .correct {
-  color: green;
+  color: #ffffff;
 }
 
 .incorrect {
-  color: red;
+  color: $error;
 }
 
 #cursor {
   font-weight: 100;
-  color: #2e3d48;
+  color: #ffffff;
   animation: 1s blink step-end infinite;
-  font-size: 30px;
+  font-size: 20px;
 }
 
 @keyframes blink {
   from,
   to {
-    color: black;
+    color: #ffffff;
   }
   50% {
     color: transparent;
