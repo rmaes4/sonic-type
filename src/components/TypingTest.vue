@@ -1,17 +1,26 @@
 <template>
-  <div v-html="preview" id="test-wrapper"></div>
+  <div
+    v-html="preview"
+    id="test-wrapper"
+    :class="focused ? 'focused' : 'unfocused'"
+  ></div>
   <h1>{{ wordsPerMinute }} WPM</h1>
-  Current word: {{ currentWord }} Current letter: {{ currentLetter }} Errors:
-  {{ errors }}
-  <br />
-  {{ userText }}
-  <br />
-  {{ targetText }}
+  <pre>{{ targetText }}</pre>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { Timer } from "./Timer";
+import { auth, usersCollection, firebase } from "../firebase";
+
+const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      resolve(user);
+    }, reject);
+  });
+};
 
 interface Word {
   letters: string[];
@@ -26,22 +35,67 @@ export default defineComponent({
     },
     author: String,
   },
-  setup(props) {
-    //TODO: count premature space as error(s)
+  emits: {
+    testComplete: null,
+  },
+  setup(props, { emit }) {
+    const reset = () => {
+      currentWord.value = 0;
+      currentLetter.value = 0;
+      focused.value = true;
+      completed.value = false;
+      timer.value = new Timer();
+      targetText.value = [];
+      userText.value = [[]];
+      started.value = false;
+      setup();
+    };
+    const addScoreToDB = async () => {
+      console.log(wordsPerMinute.value);
+      const user = await getCurrentUser();
+      if (user) {
+        const uid = user.uid;
+        console.log(user);
+        await usersCollection.doc(uid).collection("tests").add({
+          score: wordsPerMinute.value,
+          errors: errors.value,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    };
     const currentWord = ref(0);
     const currentLetter = ref(0);
+    const focused = ref(true);
+    const completed = ref(false);
     onMounted(() => {
-      window.addEventListener("keypress", function (ev) {
+      window.addEventListener("focus", function () {
+        focused.value = true;
+      });
+      window.addEventListener("blur", function () {
+        focused.value = false;
+      });
+      window.addEventListener("keypress", async function (ev) {
         if (ev.key === " ") {
-          userText.value.push([]);
-          currentWord.value++;
-          currentLetter.value = 0;
+          ev.preventDefault();
+          if (currentLetter.value > 0) {
+            const length = targetText.value[currentWord.value].length;
+            if (currentLetter.value < length) {
+              const difference = length - currentLetter.value;
+              for (let k = 0; k < difference; k++) {
+                userText.value[currentWord.value].push("_");
+              }
+            } else {
+            }
+            userText.value.push([]);
+            currentWord.value++;
+            currentLetter.value = 0;
+          }
+        } else if (ev.key === "Enter" && completed.value === true) {
+          emit("testComplete");
         } else if (
           ev.key === "Backspace" &&
           (currentWord.value > 0 || currentLetter.value > 0)
         ) {
-          console.log(currentWord.value);
-          console.log(currentLetter.value);
           if (currentLetter.value > 0) {
             userText.value[currentWord.value].pop();
             currentLetter.value--;
@@ -60,8 +114,12 @@ export default defineComponent({
               targetText.value[targetText.value.length - 1].length - 1) ||
           currentWord.value > targetText.value.length - 1
         ) {
-          console.log("STOP");
-          timer.value.end();
+          if (completed.value === false) {
+            console.log("STOP");
+            timer.value.end();
+            completed.value = true;
+            await addScoreToDB();
+          }
         }
         if (started.value === false) {
           console.log("start");
@@ -74,19 +132,20 @@ export default defineComponent({
     const targetText = ref<string[][]>([]);
     const userText = ref<string[][]>([[]]);
     const started = ref(false);
-    const words = props.text.split(" ");
-    for (let word of words) {
-      const letters = word.split("");
-      targetText.value.push(letters);
-    }
+    const setup = () => {
+      const words = props.text.split(" ");
+      for (let word of words) {
+        const letters = word.split("");
+        targetText.value.push(letters);
+      }
+    };
+    setup();
 
     const errors = computed(() => {
       let errorCount = 0;
       if (started.value) {
         for (let i = 0; i < userText.value.length; i++) {
           for (let j = 0; j < userText.value[i].length; j++) {
-            console.log(i);
-            console.log(j);
             if (targetText.value[i] && targetText.value[i][j]) {
               if (targetText.value[i][j] !== userText.value[i][j]) {
                 errorCount++;
@@ -188,6 +247,8 @@ export default defineComponent({
       targetText,
       errors,
       wordsPerMinute,
+      focused,
+      reset,
     };
   },
 });
@@ -198,6 +259,12 @@ export default defineComponent({
   width: 800px;
   overflow-wrap: anywhere;
   word-wrap: break-word;
+}
+.focused {
+  border: 5px solid black;
+}
+
+.unfocused {
   border: 1px solid black;
 }
 word {

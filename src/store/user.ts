@@ -1,5 +1,5 @@
 import { reactive, readonly, provide, inject } from "vue";
-import { auth } from "../firebase";
+import { auth, usersCollection } from "../firebase";
 
 export const userStoreSymbol = Symbol("user");
 
@@ -25,19 +25,26 @@ export const createUserStore = () => {
   auth.onAuthStateChanged((user) => {
     fetchUser(user as UserData | null);
   });
-  const state = reactive<UserState>({
+  const state = reactive<any>({
     user: {
       loggedIn: false,
       data: null,
     },
   });
-  const fetchUser = (user: UserData | null) => {
+  const fetchUser = async (user: UserData | null) => {
     state.user.loggedIn = user !== null;
     if (user) {
+      const data = await usersCollection.doc(user.uid).get();
+
       state.user.data = {
         displayName: user.displayName,
         email: user.email,
+        avgScore: data.data()?.avgScore || 0,
       };
+      usersCollection.doc(user.uid).onSnapshot((doc) => {
+        const avgScore = doc.data()?.avgScore;
+        state.user.data.avgScore = avgScore;
+      });
     } else {
       state.user.data = null;
     }
